@@ -7,68 +7,48 @@ export default function CreateProfile() {
     const [skillLevel, setSkillLevel] = useState(5);
     const [sports, setSports] = useState([]);
     const [allSports, setAllSports] = useState([]);
-
     const navigate = useNavigate();
 
     useEffect(() => {
-        const loadSports = async () => {
-            const res = await api.get("/sports");
-            setAllSports(res.data);
-        };
-
-        loadSports();
+        api.get("/sports").then(res => setAllSports(res.data));
     }, []);
 
-    const toggleSport = (id) => {
-        setSports((prev) =>
-            prev.includes(id)
-                ? prev.filter((s) => s !== id)
-                : [...prev, id]
-        );
-    };
-
     const handleSubmit = async () => {
-        await api.post("/profile", {
-            description,
-            skillLevel,
-            sports
-        });
-
-        navigate("/home");
+        try {
+            await api.post("/profile/create", {
+                bio: description,
+                skillLevel: parseInt(skillLevel),
+                sportIds: sports
+            });
+            navigate("/profile");
+        } catch (e) { alert("Error saving profile"); }
     };
 
     return (
-        <div>
-            <h2>Create Profile</h2>
-
-            <textarea
-                placeholder="description"
-                onChange={(e) => setDescription(e.target.value)}
-            />
-
-            <input
-                type="number"
-                min="1"
-                max="10"
-                value={skillLevel}
-                onChange={(e) => setSkillLevel(e.target.value)}
-            />
-
-            <h3>Select Sports</h3>
-
-            {allSports.map((s) => (
-                <div key={s.id}>
-                    <input
-                        type="checkbox"
-                        onChange={() => toggleSport(s.id)}
-                    />
-                    {s.name}
+        <div className="page-container">
+            <div className="main-card" style={{ maxWidth: "800px" }}>
+                <h1>CREARE PROFIL</h1>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px", marginTop: "30px" }}>
+                    <div className="form-group">
+                        <label>Descriere</label>
+                        <textarea rows="4" onChange={e => setDescription(e.target.value)} />
+                    </div>
+                    <div className="form-group">
+                        <label>Skill Level (1-10): {skillLevel}</label>
+                        <input type="range" min="1" max="10" value={skillLevel} onChange={e => setSkillLevel(e.target.value)} />
+                    </div>
                 </div>
-            ))}
-
-            <button onClick={handleSubmit}>
-                Create Profile
-            </button>
+                <h3 style={{ marginTop: "20px" }}>Alege Sporturile</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", margin: "20px 0" }}>
+                    {allSports.map(s => (
+                        <div key={s.id} style={{ border: "1px solid var(--border-color)", padding: "10px", borderRadius: "8px" }}>
+                            <input type="checkbox" onChange={() => setSports(prev => prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id])} />
+                            <span style={{ marginLeft: "10px" }}>{s.name}</span>
+                        </div>
+                    ))}
+                </div>
+                <button className="btn-primary" onClick={handleSubmit}>SALVEAZĂ PROFILUL</button>
+            </div>
         </div>
     );
 }

@@ -1,45 +1,36 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../api";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-
+    const [form, setForm] = useState({ username: "", email: "", password: "" });
     const navigate = useNavigate();
 
     const handleRegister = async () => {
         try {
-            await api.post("/auth/register", {
-                username,
-                password
-            });
-
+            await api.post("/auth/register", form);
             navigate("/login");
-
-        } catch {
-            alert("Register error");
-        }
+        } catch (e) { alert("Registration failed"); }
     };
 
     return (
-        <div>
-            <h2>Register</h2>
-
-            <input
-                placeholder="username"
-                onChange={(e) => setUsername(e.target.value)}
-            />
-
-            <input
-                type="password"
-                placeholder="password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <button onClick={handleRegister}>
-                Register
-            </button>
+        <div className="page-container">
+            <div className="main-card" style={{ maxWidth: "400px" }}>
+                <h1>Cont Nou</h1>
+                <div className="form-group">
+                    <label>Utilizator</label>
+                    <input type="text" onChange={e => setForm({...form, username: e.target.value})} />
+                </div>
+                <div className="form-group">
+                    <label>Email</label>
+                    <input type="email" onChange={e => setForm({...form, email: e.target.value})} />
+                </div>
+                <div className="form-group">
+                    <label>Parolă</label>
+                    <input type="password" onChange={e => setForm({...form, password: e.target.value})} />
+                </div>
+                <button className="btn-primary" style={{ width: "100%" }} onClick={handleRegister}>SIGN UP</button>
+            </div>
         </div>
     );
 }
