@@ -6,6 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.hackathon.app.entity.Profile;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/profile")
 public class ProfileController {
@@ -30,5 +32,10 @@ public class ProfileController {
             @RequestHeader("Authorization") String token
     ) {
         return profileService.getMyProfile(token);
+    }
+
+    @GetMapping("/all")
+    public List<Profile> getAllProfiles() {
+        return profileService.getAllProfiles();
     }
 }
