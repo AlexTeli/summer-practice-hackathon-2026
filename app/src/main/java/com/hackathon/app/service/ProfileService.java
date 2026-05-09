@@ -28,23 +28,23 @@ public class ProfileService {
         this.jwtService = jwtService;
     }
 
-    public void createProfile(CreateProfileRequest req, String token) {
-        // Verificăm dacă token-ul există și are formatul corect
-        if (token == null || !token.startsWith("Bearer ") || token.length() < 15) {
-            throw new RuntimeException("Token invalid sau expirat. Te rugăm să te loghezi din nou.");
+    private String validateAndExtractToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new RuntimeException("Token lipsă");
         }
-
         String jwt = token.replace("Bearer ", "");
-
-        // Verificare suplimentară pentru a evita MalformedJwtException (trebuie să aibă 2 puncte)
         if (jwt.chars().filter(ch -> ch == '.').count() != 2) {
-            throw new RuntimeException("Formatul token-ului este incorect.");
+            throw new RuntimeException("Token invalid");
         }
+        return jwt;
+    }
 
+    public void createProfile(CreateProfileRequest req, String token) {
+        String jwt = validateAndExtractToken(token);
         String username = jwtService.extractUsername(jwt);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Utilizatorul nu a fost găsit"));
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Profile profile = profileRepository.findByUser(user).orElse(new Profile());
 
@@ -59,14 +59,15 @@ public class ProfileService {
 
         profileRepository.save(profile);
     }
+
     public Profile getMyProfile(String token) {
-
-        String username = jwtService.extractUsername(token.replace("Bearer ", ""));
-
-        User user = userRepository.findByUsername(username)
-                .orElseThrow();
-
-        return profileRepository.findByUser(user)
-                .orElse(null);
+        try {
+            String jwt = validateAndExtractToken(token);
+            String username = jwtService.extractUsername(jwt);
+            User user = userRepository.findByUsername(username).orElseThrow();
+            return profileRepository.findByUser(user).orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

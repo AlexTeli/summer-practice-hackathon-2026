@@ -13,15 +13,22 @@ export default function CreateProfile() {
         api.get("/sports").then(res => setAllSports(res.data));
     }, []);
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (e) => {
+        // Oprește comportamentul implicit al browserului de a reîncărca pagina
+        if (e) e.preventDefault();
+
         try {
             await api.post("/profile/create", {
                 bio: description,
                 skillLevel: parseInt(skillLevel),
                 sportIds: sports
             });
+            // Navigăm către ruta de profil din React
             navigate("/profile");
-        } catch (e) { alert("Error saving profile"); }
+        } catch (error) {
+            console.error("Eroare la salvare:", error);
+            alert("Error saving profile. Verifică dacă ești logat!");
+        }
     };
 
     return (
@@ -42,12 +49,19 @@ export default function CreateProfile() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px", margin: "20px 0" }}>
                     {allSports.map(s => (
                         <div key={s.id} style={{ border: "1px solid var(--border-color)", padding: "10px", borderRadius: "8px" }}>
-                            <input type="checkbox" onChange={() => setSports(prev => prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id])} />
+                            <input
+                                type="checkbox"
+                                checked={sports.includes(s.id)}
+                                onChange={() => setSports(prev => prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id])}
+                            />
                             <span style={{ marginLeft: "10px" }}>{s.name}</span>
                         </div>
                     ))}
                 </div>
-                <button className="btn-primary" onClick={handleSubmit}>SALVEAZĂ PROFILUL</button>
+                {/* Important: type="button" previne submit-ul accidental al paginii */}
+                <button type="button" className="btn-primary" onClick={handleSubmit}>
+                    SALVEAZĂ PROFILUL
+                </button>
             </div>
         </div>
     );

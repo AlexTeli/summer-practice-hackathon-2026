@@ -15,9 +15,7 @@ public class Profile {
     private Long id;
 
     private String bio;
-
     private String profileImageUrl;
-
     private int skillLevel;
 
     @ManyToMany
