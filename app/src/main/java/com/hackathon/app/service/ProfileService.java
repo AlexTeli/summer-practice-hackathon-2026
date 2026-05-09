@@ -8,7 +8,6 @@ import com.hackathon.app.repository.ProfileRepository;
 import com.hackathon.app.repository.SportRepository;
 import com.hackathon.app.repository.UserRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -30,23 +29,36 @@ public class ProfileService {
     }
 
     public void createProfile(CreateProfileRequest req, String token) {
+        // Verificăm dacă token-ul există și are formatul corect
+        if (token == null || !token.startsWith("Bearer ") || token.length() < 15) {
+            throw new RuntimeException("Token invalid sau expirat. Te rugăm să te loghezi din nou.");
+        }
 
-        String username = jwtService.extractUsername(token.replace("Bearer ", ""));
+        String jwt = token.replace("Bearer ", "");
+
+        // Verificare suplimentară pentru a evita MalformedJwtException (trebuie să aibă 2 puncte)
+        if (jwt.chars().filter(ch -> ch == '.').count() != 2) {
+            throw new RuntimeException("Formatul token-ului este incorect.");
+        }
+
+        String username = jwtService.extractUsername(jwt);
 
         User user = userRepository.findByUsername(username)
-                .orElseThrow();
+                .orElseThrow(() -> new RuntimeException("Utilizatorul nu a fost găsit"));
 
-        Profile profile = new Profile();
+        Profile profile = profileRepository.findByUser(user).orElse(new Profile());
+
         profile.setUser(user);
-        profile.setBio(req.bio);
-        profile.setSkillLevel(req.skillLevel);
+        profile.setBio(req.getBio());
+        profile.setSkillLevel(req.getSkillLevel());
 
-        List<Sport> sports = sportRepository.findAllById(req.sportIds);
-        profile.setSports(sports);
+        if (req.getSportIds() != null && !req.getSportIds().isEmpty()) {
+            List<Sport> sports = sportRepository.findAllById(req.getSportIds());
+            profile.setSports(sports);
+        }
 
         profileRepository.save(profile);
     }
-
     public Profile getMyProfile(String token) {
 
         String username = jwtService.extractUsername(token.replace("Bearer ", ""));

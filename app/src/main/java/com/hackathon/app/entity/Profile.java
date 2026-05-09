@@ -1,10 +1,13 @@
 package com.hackathon.app.entity;
 
 import jakarta.persistence.*;
-
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
 
 @Entity
+@Data
+@NoArgsConstructor
 public class Profile {
 
     @Id
@@ -16,52 +19,14 @@ public class Profile {
     private String profileImageUrl;
 
     private int skillLevel;
+
     @ManyToMany
+    @JoinTable(
+            name = "profile_sports",
+            joinColumns = @JoinColumn(name = "profile_id"),
+            inverseJoinColumns = @JoinColumn(name = "sport_id")
+    )
     private List<Sport> sports;
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getProfileImageUrl() {
-        return profileImageUrl;
-    }
-
-    public void setProfileImageUrl(String profileImageUrl) {
-        this.profileImageUrl = profileImageUrl;
-    }
-
-    public int getSkillLevel() {
-        return skillLevel;
-    }
-
-    public void setSkillLevel(int skillLevel) {
-        this.skillLevel = skillLevel;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public List<Sport> getSports() {
-        return sports;
-    }
-
-    public void setSports(List<Sport> sports) {
-        this.sports = sports;
-    }
 
     @OneToOne
     @JoinColumn(name = "user_id")
